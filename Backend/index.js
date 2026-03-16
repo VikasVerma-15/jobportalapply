@@ -17,15 +17,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
  const corsOptions = {
-     origin: [
-       "http://localhost:5173", // for local development
-       "https://jobport-mern.vercel.app" // your deployed frontend
-     ],
-     credentials: true,
-   };
+  origin: [
+    "http://localhost:5173",                // local
+    "https://jobportalapply.vercel.app",    // your new frontend URL
+  ],
+  credentials: true,
+};
 
-   app.use(cors(corsOptions));
 
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); 
 const PORT = process.env.PORT || 5001;
 
  
