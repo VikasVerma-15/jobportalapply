@@ -40,29 +40,34 @@ const isHttpsVercelAppOrigin = (origin) => {
   }
 };
 
+const allowedOrigins = parseAllowedOrigins();
+const corsOptions = {
+  origin(origin, callback) {
+    const allowed =
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      isHttpsVercelAppOrigin(origin);
+    if (!allowed) {
+      callback(null, false);
+      return;
+    }
+    // With credentials: true, reflect the exact Origin string (required for browsers).
+    callback(null, origin || true);
+  },
+  credentials: true,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  optionsSuccessStatus: 204,
+};
+
+// CORS must run before body parsers so OPTIONS preflight always gets headers.
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 //middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-const allowedOrigins = parseAllowedOrigins();
-const corsOptions = {
-  origin(origin, callback) {
-    if (
-      !origin ||
-      allowedOrigins.includes(origin) ||
-      isHttpsVercelAppOrigin(origin)
-    ) {
-      callback(null, true);
-    } else {
-      callback(null, false);
-    }
-  },
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); 
 const PORT = process.env.PORT || 5001;
 
  
