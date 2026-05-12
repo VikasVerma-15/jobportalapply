@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5012";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5012").replace(
+  /\/+$/,
+  ""
+);
 
 export const USER_API_ENDPOINT = `${API_BASE_URL}/api/user`;
 export const JOB_API_ENDPOINT = `${API_BASE_URL}/api/job`;
