@@ -11,19 +11,40 @@ import path from "path";
 dotenv.config({});
 const app = express();
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
+const parseAllowedOrigins = () => {
+  const fromEnv = (process.env.CLIENT_ORIGIN || process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const defaults = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://jobport-mern.vercel.app",
+    "https://jobportalapply.vercel.app",
+  ];
+  return [...new Set([...defaults, ...fromEnv])];
+};
+
 //middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
- const corsOptions = {
-  origin: [
-    "http://localhost:5173",                // local
-    "https://jobportalapply.vercel.app",    // your new frontend URL
-  ],
+const allowedOrigins = parseAllowedOrigins();
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
   credentials: true,
 };
-
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); 

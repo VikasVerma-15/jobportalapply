@@ -4,6 +4,17 @@ import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloud.js";
 
+const toPublicUser = (user) => ({
+  _id: user._id,
+  fullname: user.fullname,
+  email: user.email,
+  phoneNumber: user.phoneNumber,
+  adharcard: user.adharcard,
+  pancard: user.pancard,
+  role: user.role,
+  profile: user.profile,
+});
+
 export const register = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, password, adharcard, pancard, role } = req.body;
@@ -121,16 +132,7 @@ export const login = async (req, res) => {
       expiresIn: "1d",
     });
 
-    const sanitizedUser = {
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      adharcard: user.adharcard,
-      pancard: user.pancard,
-      role: user.role,
-      profile: user.profile,
-    };
+    const sanitizedUser = toPublicUser(user);
 
     const isProd = process.env.NODE_ENV === "production";
     const cookieOptions = {
@@ -153,6 +155,28 @@ export const login = async (req, res) => {
     console.error(error);
     res.status(500).json({
       message: "Server Error login failed",
+      success: false,
+    });
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.id);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      user: toPublicUser(user),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server Error",
       success: false,
     });
   }

@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getMe,
   login,
   logout,
   register,
@@ -13,6 +14,7 @@ const router = express.Router();
 router.route("/register").post(singleUpload, register);
 router.route("/login").post(login);
 router.route("/logout").post(logout);
+router.route("/me").get(authenticateToken, getMe);
 router
   .route("/profile/update")
   .post(authenticateToken, singleUpload, updateProfile);
