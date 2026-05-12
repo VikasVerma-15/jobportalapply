@@ -29,6 +29,17 @@ const parseAllowedOrigins = () => {
   return [...new Set([...defaults, ...fromEnv])];
 };
 
+/** Vercel preview URLs (e.g. *.vercel.app) change each deploy — allow them for credentialed CORS */
+const isHttpsVercelAppOrigin = (origin) => {
+  if (!origin || typeof origin !== "string") return false;
+  try {
+    const u = new URL(origin);
+    return u.protocol === "https:" && u.hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+};
+
 //middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -37,7 +48,11 @@ app.use(cookieParser());
 const allowedOrigins = parseAllowedOrigins();
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      isHttpsVercelAppOrigin(origin)
+    ) {
       callback(null, true);
     } else {
       callback(null, false);
